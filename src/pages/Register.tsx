@@ -16,11 +16,13 @@ const Register = () => {
     e.preventDefault();
     setError(null);
     try {
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) {
         setError(error.message);
       } else {
-        navigate('/');
+        // Signup successful, but email needs confirmation
+        setError(`Account created! Please check your email (${email}) to confirm your account before logging in.`);
+        // Optionally clear form or disable submit
       }
     } catch (error: any) {
       setError(error.message);
@@ -46,8 +48,14 @@ const Register = () => {
                 <Input id="password" type="password" placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
             </div>
-            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-            <Button type="submit" className="w-full mt-4">Register</Button>
+            {error && (
+              <p className={`text-sm mt-2 ${error.includes('created') ? 'text-green-500' : 'text-red-500'}`}>
+                {error}
+              </p>
+            )}
+            <Button type="submit" className="w-full mt-4" disabled={error?.includes('created')}>
+              Register
+            </Button>
           </form>
         </CardContent>
         <CardFooter>

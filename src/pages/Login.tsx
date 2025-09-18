@@ -27,6 +27,19 @@ const Login = () => {
     }
   };
 
+  const handleResend = async () => {
+    setError(null);
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+    });
+    if (error) {
+      setError(error.message);
+    } else {
+      setError('Confirmation email resent. Please check your inbox.');
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
       <Card className="w-full max-w-sm">
@@ -46,7 +59,22 @@ const Login = () => {
                 <Input id="password" type="password" placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
             </div>
-            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+            {error && (
+              <div className="mt-2">
+                <p className={`text-sm ${error.includes('not confirmed') ? 'text-yellow-600' : 'text-red-500'}`}>
+                  {error}
+                </p>
+                {error?.includes('not confirmed') && (
+                  <Button
+                    variant="link"
+                    onClick={handleResend}
+                    className="w-full mt-1 text-sm"
+                  >
+                    Resend Confirmation Email
+                  </Button>
+                )}
+              </div>
+            )}
             <Button type="submit" className="w-full mt-4">Login</Button>
           </form>
         </CardContent>
