@@ -8,6 +8,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import GoHomeButton from "@/components/GoHomeButton";
 
 type Product = Database['public']['Tables']['products']['Row'];
 type Review = Database['public']['Tables']['reviews']['Row'];
@@ -85,6 +86,7 @@ const Product = () => {
 
   return (
     <div className="container mx-auto py-8">
+      <GoHomeButton />
       <Card>
         <CardHeader>
           <CardTitle>{product.name}</CardTitle>

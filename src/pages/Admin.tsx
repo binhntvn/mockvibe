@@ -6,25 +6,33 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import GoHomeButton from "@/components/GoHomeButton";
+import { User } from "@supabase/supabase-js";
 
 type Product = Database['public']['Tables']['products']['Row'];
 
 const Admin = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   useEffect(() => {
-    fetchProducts();
+    fetchData();
   }, []);
 
-  const fetchProducts = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.from('products').select('*');
-      if (error) throw error;
-      setProducts(data);
+      const { data: productData, error: productError } = await supabase.from('products').select('*');
+      if (productError) throw productError;
+      setProducts(productData);
+
+      const { data: { users }, error: userError } = await supabase.auth.admin.listUsers();
+      if (userError) throw userError;
+      setUsers(users);
+
     } catch (error: any) {
       setError(error.message);
     } finally {
@@ -32,34 +40,34 @@ const Admin = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDeleteProduct = async (id: number) => {
     try {
       const { error } = await supabase.from('products').delete().eq('id', id);
       if (error) throw error;
-      fetchProducts();
+      fetchData();
     } catch (error: any) {
       setError(error.message);
     }
   };
 
-  const handleEdit = (product: Product) => {
+  const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
   };
 
-  const handleUpdate = async (e: React.FormEvent) => {
+  const handleUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
     try {
       const { error } = await supabase.from('products').update(editingProduct).eq('id', editingProduct.id);
       if (error) throw error;
       setEditingProduct(null);
-      fetchProducts();
+      fetchData();
     } catch (error: any) {
       setError(error.message);
     }
   };
   
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
     try {
@@ -67,7 +75,7 @@ const Admin = () => {
       const { error } = await supabase.from('products').insert({ name, description, price, image_url, stock_quantity });
       if (error) throw error;
       setEditingProduct(null);
-      fetchProducts();
+      fetchData();
     } catch (error: any) {
       setError(error.message);
     }
@@ -78,7 +86,23 @@ const Admin = () => {
 
   return (
     <div className="container mx-auto py-8">
+      <GoHomeButton />
       <h1 className="text-3xl font-bold mb-8">Admin Panel</h1>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Users</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {users.map((user) => (
+              <div key={user.id} className="flex items-center justify-between">
+                <p>{user.email}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {editingProduct ? (
         <Card>
@@ -86,7 +110,7 @@ const Admin = () => {
             <CardTitle>{editingProduct.id ? 'Edit Product' : 'Create Product'}</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={editingProduct.id ? handleUpdate : handleCreate}>
+            <form onSubmit={editingProduct.id ? handleUpdateProduct : handleCreateProduct}>
               <div className="grid w-full items-center gap-4">
                 <div className="flex flex-col space-y-1.5">
                   <Label htmlFor="name">Name</Label>
@@ -127,8 +151,8 @@ const Admin = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="flex justify-end space-x-2">
-                    <Button onClick={() => handleEdit(product)}>Edit</Button>
-                    <Button variant="destructive" onClick={() => handleDelete(product.id)}>Delete</Button>
+                    <Button onClick={() => handleEditProduct(product)}>Edit</Button>
+                    <Button variant="destructive" onClick={() => handleDeleteProduct(product.id)}>Delete</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -136,15 +160,6 @@ const Admin = () => {
           </div>
         </div>
       )}
-
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>Promotions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>Promotion management is not yet implemented.</p>
-        </CardContent>
-      </Card>
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import GoHomeButton from "@/components/GoHomeButton";
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -16,13 +17,15 @@ const Register = () => {
     e.preventDefault();
     setError(null);
     try {
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const { error } = await supabase.auth.signUp({ email, password });
       if (error) {
-        setError(error.message);
+        if (error.message.includes("Password")) {
+          setError("Password is too weak. Please use a stronger password.");
+        } else {
+          setError(error.message);
+        }
       } else {
-        // Signup successful, but email needs confirmation
-        setError(`Account created! Please check your email (${email}) to confirm your account before logging in.`);
-        // Optionally clear form or disable submit
+        navigate('/');
       }
     } catch (error: any) {
       setError(error.message);
@@ -31,6 +34,7 @@ const Register = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
+      <GoHomeButton />
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Register</CardTitle>
@@ -48,14 +52,8 @@ const Register = () => {
                 <Input id="password" type="password" placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
             </div>
-            {error && (
-              <p className={`text-sm mt-2 ${error.includes('created') ? 'text-green-500' : 'text-red-500'}`}>
-                {error}
-              </p>
-            )}
-            <Button type="submit" className="w-full mt-4" disabled={error?.includes('created')}>
-              Register
-            </Button>
+            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+            <Button type="submit" className="w-full mt-4">Register</Button>
           </form>
         </CardContent>
         <CardFooter>

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Database } from "@/integrations/supabase/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import GoHomeButton from "@/components/GoHomeButton";
 
 type Order = Database['public']['Tables']['orders']['Row'];
 
@@ -47,6 +48,7 @@ const Profile = () => {
 
   return (
     <div className="container mx-auto py-8">
+      <GoHomeButton />
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl">Profile Page</h1>
         <Button onClick={handleLogout}>Logout</Button>

@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import GoHomeButton from "@/components/GoHomeButton";
 
 const CheckoutPage = () => {
   const { cart, clearCart, total } = useCart();
@@ -65,6 +66,7 @@ const CheckoutPage = () => {
 
   return (
     <div className="container mx-auto py-8">
+      <GoHomeButton />
       <Card>
         <CardHeader>
           <CardTitle>Checkout</CardTitle>
