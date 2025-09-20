@@ -89,7 +89,6 @@ const Index = () => {
         </section>
       </main>
       <Footer />
-      <FloatingMenu />
     </div>
   );
 };

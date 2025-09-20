@@ -29,6 +29,7 @@ const CheckoutPage = () => {
     }
 
     try {
+      console.log("Placing order with cart:", cart);
       const orderData = {
         total_amount: total,
         shipping_address: shippingAddress,

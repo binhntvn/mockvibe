@@ -15,6 +15,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { CartProvider } from "./contexts/CartContext";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import FloatingMenu from "./components/FloatingMenu";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +28,7 @@ const App = () => (
           <CartProvider>
             <Toaster />
             <Sonner />
+            <FloatingMenu />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
@@ -33,6 +36,7 @@ const App = () => (
               <Route path="/product/:id" element={<Product />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/product/:id/details" element={<ProductDetailPage />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/profile" element={<Profile />} />

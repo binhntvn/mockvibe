@@ -102,18 +102,22 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   }, [state.cart]);
 
   const addToCart = (product: Product, quantity: number) => {
+    console.log(`Adding ${quantity} of ${product.name} to cart.`);
     dispatch({ type: 'ADD_TO_CART', payload: { product, quantity } });
   };
 
   const removeFromCart = (productId: number) => {
+    console.log(`Removing product with ID ${productId} from cart.`);
     dispatch({ type: 'REMOVE_FROM_CART', payload: { productId } });
   };
 
   const updateQuantity = (productId: number, quantity: number) => {
+    console.log(`Updating quantity for product with ID ${productId} to ${quantity}.`);
     dispatch({ type: 'UPDATE_QUANTITY', payload: { productId, quantity } });
   };
 
   const clearCart = () => {
+    console.log('Clearing cart.');
     dispatch({ type: 'CLEAR_CART' });
   };
 

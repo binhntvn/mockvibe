@@ -42,6 +42,11 @@ const FloatingMenu = () => {
               <SheetTitle>Shopping Cart</SheetTitle>
             </SheetHeader>
             <Cart />
+            <div className="mt-4">
+              <Link to="/checkout">
+                <Button className="w-full">Checkout</Button>
+              </Link>
+            </div>
           </SheetContent>
         </Sheet>
       </div>

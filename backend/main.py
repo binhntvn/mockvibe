@@ -7,14 +7,24 @@ from fastapi.security import OAuth2PasswordRequestForm
 from typing import List
 import uuid
 from sqlalchemy import text
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:8080",
+    "http://192.168.1.57:8080",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -32,6 +42,7 @@ def get_db():
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == form_data.username).first()
     if not user:
+        logger.warning(f"Failed login attempt for email: {form_data.username}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -40,12 +51,14 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
     
     profile = db.query(models.Profile).filter(models.Profile.id == str(user.id)).first()
     if not profile or not auth.verify_password(form_data.password, profile.hashed_password):
+        logger.warning(f"Failed login attempt for email: {form_data.username}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = auth.create_access_token(data={"sub": str(user.id)})
+    logger.info(f"User logged in successfully: {user.email}")
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.post("/users/", response_model=schemas.User)
@@ -67,6 +80,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     
     # Fetch the created user to return
     created_user = db.query(models.Profile).filter(models.Profile.id == user_id).first()
+    logger.info(f"New user registered: {user.email}")
     return schemas.User(id=str(created_user.id), email=user.email)
 
 @app.get("/products/", response_model=List[schemas.Product])
@@ -84,6 +98,8 @@ def read_product(product_id: int, db: Session = Depends(get_db)):
 @app.get("/products/{product_id}/reviews", response_model=List[schemas.Review])
 def read_reviews(product_id: int, db: Session = Depends(get_db)):
     reviews = db.query(models.Review).filter(models.Review.product_id == product_id).all()
+    for review in reviews:
+        review.user_id = str(review.user_id)  # Ensure user_id is a string
     return reviews
 
 @app.post("/products/{product_id}/reviews", response_model=schemas.Review)
@@ -92,6 +108,8 @@ def create_review(product_id: int, review: schemas.ReviewCreate, user_id: str = 
     db.add(db_review)
     db.commit()
     db.refresh(db_review)
+    logger.info(f"New review submitted for product {product_id} by user {user_id}")
+    db_review.user_id = str(db_review.user_id)  # Ensure user_id is a string
     return db_review
 
 @app.post("/orders/", response_model=schemas.Order)
@@ -104,19 +122,20 @@ def create_order(order: schemas.OrderCreate, user_id: str = Depends(auth.get_cur
     db.add_all(order_items)
     db.commit()
     db.refresh(db_order)
-    db_order.user_id = str(db_order.user_id)
+    logger.info(f"New order created with ID {db_order.id} by user {user_id}")
+    db_order.user_id = str(db_order.user_id)  # Ensure user_id is a string
     return db_order
 
 @app.get("/orders/", response_model=List[schemas.Order])
 def read_orders(user_id: str = Depends(auth.get_current_user), db: Session = Depends(get_db)):
     orders = db.query(models.Order).options(joinedload(models.Order.items)).filter(models.Order.user_id == user_id).all()
     for order in orders:
-        order.user_id = str(order.user_id)
+        order.user_id = str(order.user_id)  # Ensure user_id is a string
     return orders
 
 @app.get("/admin/orders/", response_model=List[schemas.Order])
 def read_all_orders(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     orders = db.query(models.Order).options(joinedload(models.Order.items)).offset(skip).limit(limit).all()
     for order in orders:
-        order.user_id = str(order.user_id)
+        order.user_id = str(order.user_id)  # Ensure user_id is a string
     return orders
