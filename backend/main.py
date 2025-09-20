@@ -100,9 +100,8 @@ def create_order(order: schemas.OrderCreate, user_id: str = Depends(auth.get_cur
     db.add(db_order)
     db.commit()
     db.refresh(db_order)
-    for item in order.items:
-        db_item = models.OrderItem(**item.dict(), order_id=db_order.id)
-        db.add(db_item)
+    order_items = [models.OrderItem(**item.dict(), order_id=db_order.id) for item in order.items]
+    db.add_all(order_items)
     db.commit()
     db.refresh(db_order)
     db_order.user_id = str(db_order.user_id)
