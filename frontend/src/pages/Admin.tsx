@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Database } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
@@ -10,10 +9,12 @@ import GoHomeButton from "@/components/GoHomeButton";
 import { User } from "@supabase/supabase-js";
 
 type Product = Database['public']['Tables']['products']['Row'];
+type Order = Database['public']['Tables']['orders']['Row'];
 
 const Admin = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -25,13 +26,17 @@ const Admin = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const { data: productData, error: productError } = await supabase.from('products').select('*');
-      if (productError) throw productError;
-      setProducts(productData);
+      const productsResponse = await fetch('http://localhost:8000/products');
+      const productsData = await productsResponse.json();
+      setProducts(productsData);
 
-      const { data: { users }, error: userError } = await supabase.auth.admin.listUsers();
-      if (userError) throw userError;
-      setUsers(users);
+      const usersResponse = await fetch('http://localhost:8000/users/');
+      const usersData = await usersResponse.json();
+      setUsers(usersData);
+
+      const ordersResponse = await fetch('http://localhost:8000/admin/orders/');
+      const ordersData = await ordersResponse.json();
+      setOrders(ordersData);
 
     } catch (error: any) {
       setError(error.message);
@@ -41,13 +46,7 @@ const Admin = () => {
   };
 
   const handleDeleteProduct = async (id: number) => {
-    try {
-      const { error } = await supabase.from('products').delete().eq('id', id);
-      if (error) throw error;
-      fetchData();
-    } catch (error: any) {
-      setError(error.message);
-    }
+    // This would require a DELETE endpoint in the backend
   };
 
   const handleEditProduct = (product: Product) => {
@@ -55,30 +54,11 @@ const Admin = () => {
   };
 
   const handleUpdateProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingProduct) return;
-    try {
-      const { error } = await supabase.from('products').update(editingProduct).eq('id', editingProduct.id);
-      if (error) throw error;
-      setEditingProduct(null);
-      fetchData();
-    } catch (error: any) {
-      setError(error.message);
-    }
+    // This would require a PUT endpoint in the backend
   };
   
   const handleCreateProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingProduct) return;
-    try {
-      const { name, description, price, image_url, stock_quantity } = editingProduct;
-      const { error } = await supabase.from('products').insert({ name, description, price, image_url, stock_quantity });
-      if (error) throw error;
-      setEditingProduct(null);
-      fetchData();
-    } catch (error: any) {
-      setError(error.message);
-    }
+    // This would require a POST endpoint in the backend
   };
 
   if (loading) return <div>Loading...</div>;
@@ -99,6 +79,27 @@ const Admin = () => {
               <div key={user.id} className="flex items-center justify-between">
                 <p>{user.email}</p>
               </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Orders</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {orders.map((order) => (
+              <Card key={order.id}>
+                <CardHeader>
+                  <CardTitle>Order #{order.id}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p>Status: {order.status}</p>
+                  <p>Total: ${order.total_amount}</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </CardContent>

@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +14,7 @@ type Review = Database['public']['Tables']['reviews']['Row'];
 
 const Product = () => {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,19 +26,14 @@ const Product = () => {
     const fetchProductAndReviews = async () => {
       if (!id) return;
       try {
-        const { data: productData, error: productError } = await supabase
-          .from('products')
-          .select('*')
-          .eq('id', Number(id))
-          .single();
-        if (productError) throw productError;
+        const productResponse = await fetch(`http://localhost:8000/products/${id}`);
+        if (!productResponse.ok) throw new Error('Failed to fetch product');
+        const productData = await productResponse.json();
         setProduct(productData);
 
-        const { data: reviewsData, error: reviewsError } = await supabase
-          .from('reviews')
-          .select('*')
-          .eq('product_id', Number(id));
-        if (reviewsError) throw reviewsError;
+        const reviewsResponse = await fetch(`http://localhost:8000/products/${id}/reviews`);
+        if (!reviewsResponse.ok) throw new Error('Failed to fetch reviews');
+        const reviewsData = await reviewsResponse.json();
         setReviews(reviewsData);
 
       } catch (error: any) {
@@ -54,21 +48,22 @@ const Product = () => {
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !product) return;
+    if (!user || !product || !token) return;
 
     try {
-      const { data, error } = await supabase
-        .from('reviews')
-        .insert({
-          product_id: product.id,
-          user_id: user.id,
-          rating: newReview.rating,
-          review_text: newReview.review_text,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
+      const response = await fetch(`http://localhost:8000/products/${product.id}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(newReview),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to submit review');
+      }
+      const data = await response.json();
       setReviews([...reviews, data]);
       setNewReview({ rating: 5, review_text: '' });
     } catch (error: any) {

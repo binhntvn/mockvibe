@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "./ui/button";
@@ -16,14 +15,12 @@ const ProductGrid = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const { data, error } = await supabase.from('products').select('*');
-        if (error) {
-          console.error("Error fetching products:", error);
-          setError(error.message);
-        } else {
-          console.log("Fetched products:", data);
-          setProducts(data);
+        const response = await fetch('http://localhost:8000/products');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
         }
+        const data = await response.json();
+        setProducts(data);
       } catch (error: any) {
         setError(error.message);
       } finally {

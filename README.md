@@ -1,73 +1,68 @@
-# Welcome to your Lovable project
+# SoleMate E-Commerce Application
 
-## Project info
+This is a full-featured e-commerce application for SoleMate, a shoe retailer.
 
-**URL**: https://lovable.dev/projects/21e904a5-bfe0-461d-ba75-dda2850dfe36
+## Technology Stack
 
-## How can I edit this code?
+*   **Frontend**: React.js, Vite, TypeScript, shadcn/ui
+*   **Backend**: FastAPI, Python, SQLAlchemy
+*   **Database**: Supabase (PostgreSQL)
 
-There are several ways of editing your application.
+## Getting Started
 
-**Use Lovable**
+### Prerequisites
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/21e904a5-bfe0-461d-ba75-dda2850dfe36) and start prompting.
+*   Node.js and npm
+*   Python 3.8+ and pip
+*   A Supabase account and project
 
-Changes made via Lovable will be committed automatically to this repo.
+### Setup
 
-**Use your preferred IDE**
+1.  **Clone the repository:**
+    ```bash
+    git clone <repository-url>
+    cd <repository-name>
+    ```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+2.  **Configure the backend:**
+    *   Navigate to the `backend` directory: `cd backend`
+    *   Create a `.env` file and add your Supabase database connection string:
+        ```
+        DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.<your-project-ref>.supabase.co:5432/postgres"
+        SECRET_KEY="your-secret-key"
+        ```
+    *   Install the Python dependencies: `pip install -r requirements.txt`
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+3.  **Configure the frontend:**
+    *   Navigate to the `frontend` directory: `cd frontend`
+    *   Create a `.env` file and add your Supabase project details:
+        ```
+        VITE_SUPABASE_URL="https://<your-project-ref>.supabase.co"
+        VITE_SUPABASE_PUBLISHABLE_KEY="<your-anon-key>"
+        ```
+    *   Install the Node.js dependencies: `npm install`
 
-Follow these steps:
+### Running the Application
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1.  **Start the backend server:**
+    *   Navigate to the `backend` directory.
+    *   Run the command: `uvicorn main:app --reload --host 0.0.0.0`
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2.  **Start the frontend development server:**
+    *   Navigate to the `frontend` directory.
+    *   Run the command: `npm run dev`
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Deployment
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+A `deploy.sh` script is provided to build the frontend and run both servers.
+
+```bash
+./deploy.sh
 ```
 
-**Edit a file directly in GitHub**
+This script will:
+1.  Build the frontend application.
+2.  Start the FastAPI backend server.
+3.  Serve the built frontend using a simple Python HTTP server.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/21e904a5-bfe0-461d-ba75-dda2850dfe36) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+For a production deployment, you would typically use a more robust setup, such as deploying the backend to a cloud provider and the frontend to a static hosting service like Vercel or Netlify.

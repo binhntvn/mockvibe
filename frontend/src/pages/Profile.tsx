@@ -1,6 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Database } from "@/integrations/supabase/types";
@@ -10,7 +9,7 @@ import GoHomeButton from "@/components/GoHomeButton";
 type Order = Database['public']['Tables']['orders']['Row'];
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, token, logout } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,17 +17,18 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      if (!user) return;
+      if (!user || !token) return;
       try {
-        const { data, error } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('user_id', user.id);
-        if (error) {
-          setError(error.message);
-        } else {
-          setOrders(data);
+        const response = await fetch('http://localhost:8000/orders/', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch orders');
         }
+        const data = await response.json();
+        setOrders(data);
       } catch (error: any) {
         setError(error.message);
       } finally {
@@ -39,10 +39,10 @@ const Profile = () => {
     if (user) {
       fetchOrders();
     }
-  }, [user]);
+  }, [user, token]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    logout();
     navigate('/');
   };
 

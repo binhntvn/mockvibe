@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GoHomeButton from "@/components/GoHomeButton";
@@ -17,16 +16,16 @@ const Register = () => {
     e.preventDefault();
     setError(null);
     try {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) {
-        if (error.message.includes("Password")) {
-          setError("Password is too weak. Please use a stronger password.");
-        } else {
-          setError(error.message);
-        }
-      } else {
-        navigate('/');
+      const response = await fetch('http://localhost:8000/users/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to register');
       }
+      navigate('/login');
     } catch (error: any) {
       setError(error.message);
     }

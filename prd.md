@@ -17,7 +17,7 @@ To remain competitive and meet consumer demand, SoleMate requires a robust and s
     *   User profile management (e.g., view/edit personal information, shipping addresses).
 
 *   **Product Catalog & Display:**
-    *   Display a grid of shoe products fetched from the Supabase database.
+    *   Display a grid of shoe products fetched from the backend API.
     *   Each product card shows an image, name, and price.
     *   Dedicated product detail page with descriptions, larger images, and an "Add to Cart" button.
 
@@ -47,6 +47,7 @@ To remain competitive and meet consumer demand, SoleMate requires a robust and s
 
 *   **Front-End:** React.js, Vite, TypeScript
 *   **UI Components:** shadcn/ui
-*   **Backend:** Supabase (PostgreSQL) for database and authentication.
-*   **Data:** Product information will be stored in and fetched from the Supabase database.
-*   **Deployment:** Simple static site hosting (e.g., Netlify, Vercel) connected to the Supabase backend.
+*   **Backend:** FastAPI (Python), SQLAlchemy
+*   **Database:** Supabase (PostgreSQL)
+*   **Data:** Product information is stored in the Supabase database and served via the FastAPI backend.
+*   **Deployment:** Simple static site hosting (e.g., Netlify, Vercel) for the frontend, and a separate hosting solution for the FastAPI backend.

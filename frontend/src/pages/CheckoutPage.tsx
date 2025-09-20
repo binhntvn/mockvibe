@@ -4,14 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GoHomeButton from "@/components/GoHomeButton";
 
 const CheckoutPage = () => {
   const { cart, clearCart, total } = useCart();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [shippingAddress, setShippingAddress] = useState({
     street: '',
     city: '',
@@ -24,37 +23,34 @@ const CheckoutPage = () => {
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
+    if (!user || !token) {
       setError("You must be logged in to place an order.");
       return;
     }
 
     try {
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          user_id: user.id,
-          total_amount: total,
-          shipping_address: shippingAddress,
-        })
-        .select()
-        .single();
+      const orderData = {
+        total_amount: total,
+        shipping_address: shippingAddress,
+        items: cart.map(item => ({
+          product_id: item.product.id,
+          quantity: item.quantity,
+          price: item.product.price,
+        }))
+      };
 
-      if (orderError) {
-        throw orderError;
-      }
+      const response = await fetch('http://localhost:8000/orders/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(orderData),
+      });
 
-      const orderItems = cart.map((item) => ({
-        order_id: orderData.id,
-        product_id: item.product.id,
-        quantity: item.quantity,
-        price: item.product.price,
-      }));
-
-      const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
-
-      if (itemsError) {
-        throw itemsError;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to place order');
       }
 
       clearCart();

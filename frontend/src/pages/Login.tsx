@@ -2,46 +2,44 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import GoHomeButton from "@/components/GoHomeButton";
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        setError(error.message);
-      } else {
-        navigate('/');
+      const response = await fetch('http://localhost:8000/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          username: email,
+          password: password,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to login');
       }
+      const data = await response.json();
+      login(data.access_token);
+      navigate('/');
     } catch (error: any) {
       setError(error.message);
     }
   };
 
-  const handleResend = async () => {
-    setError(null);
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email,
-    });
-    if (error) {
-      setError(error.message);
-    } else {
-      setError('Confirmation email resent. Please check your inbox.');
-    }
-  };
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
+      <GoHomeButton />
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Login</CardTitle>
@@ -59,22 +57,7 @@ const Login = () => {
                 <Input id="password" type="password" placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
             </div>
-            {error && (
-              <div className="mt-2">
-                <p className={`text-sm ${error.includes('not confirmed') ? 'text-yellow-600' : 'text-red-500'}`}>
-                  {error}
-                </p>
-                {error?.includes('not confirmed') && (
-                  <Button
-                    variant="link"
-                    onClick={handleResend}
-                    className="w-full mt-1 text-sm"
-                  >
-                    Resend Confirmation Email
-                  </Button>
-                )}
-              </div>
-            )}
+            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
             <Button type="submit" className="w-full mt-4">Login</Button>
           </form>
         </CardContent>

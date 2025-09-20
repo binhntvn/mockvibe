@@ -1,52 +1,52 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { User } from '@/integrations/supabase/types';
 
 type AuthContextType = {
-  session: Session | null;
   user: User | null;
+  token: string | null;
+  login: (token: string) => void;
+  logout: () => void;
   loading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({
-  session: null,
   user: null,
+  token: null,
+  login: () => {},
+  logout: () => {},
   loading: true,
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const setData = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Error getting session:', error);
-        return;
-      }
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    };
+    if (token) {
+      // You would typically fetch the user profile here using the token
+      // For now, we'll just set a dummy user
+      setUser({ id: 'dummy-user', email: 'dummy@example.com' } as any);
+    }
+    setLoading(false);
+  }, [token]);
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+  const login = (newToken: string) => {
+    localStorage.setItem("token", newToken);
+    setToken(newToken);
+  };
 
-    setData();
-
-    return () => {
-      listener?.subscription.unsubscribe();
-    };
-  }, []);
+  const logout = () => {
+    localStorage.removeItem("token");
+    setToken(null);
+    setUser(null);
+  };
 
   const value = {
-    session,
     user,
+    token,
+    login,
+    logout,
     loading,
   };
 
