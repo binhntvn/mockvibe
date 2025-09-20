@@ -1,7 +1,8 @@
-from pydantic import BaseModel
+from custom_types import CustomBaseModel
 from typing import List, Optional
+import uuid
 
-class ProductBase(BaseModel):
+class ProductBase(CustomBaseModel):
     name: str
     description: Optional[str] = None
     price: float
@@ -14,10 +15,7 @@ class ProductCreate(ProductBase):
 class Product(ProductBase):
     id: int
 
-    class Config:
-        orm_mode = True
-
-class UserBase(BaseModel):
+class UserBase(CustomBaseModel):
     email: str
 
 class UserCreate(UserBase):
@@ -25,11 +23,8 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     id: str
-    
-    class Config:
-        orm_mode = True
 
-class ReviewBase(BaseModel):
+class ReviewBase(CustomBaseModel):
     rating: int
     review_text: Optional[str] = None
 
@@ -41,10 +36,7 @@ class Review(ReviewBase):
     product_id: int
     user_id: str
 
-    class Config:
-        orm_mode = True
-
-class OrderItemBase(BaseModel):
+class OrderItemBase(CustomBaseModel):
     product_id: int
     quantity: int
     price: float
@@ -56,10 +48,7 @@ class OrderItem(OrderItemBase):
     id: int
     order_id: int
 
-    class Config:
-        orm_mode = True
-
-class OrderBase(BaseModel):
+class OrderBase(CustomBaseModel):
     total_amount: float
     shipping_address: dict
 
@@ -70,6 +59,3 @@ class Order(OrderBase):
     id: int
     user_id: str
     items: List[OrderItem] = []
-
-    class Config:
-        orm_mode = True

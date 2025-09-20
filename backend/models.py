@@ -3,6 +3,15 @@ from sqlalchemy.orm import relationship
 from database import Base
 import datetime
 
+class User(Base):
+    __tablename__ = "users"
+    __table_args__ = {'schema': 'auth'}
+
+    id = Column(String, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True)
+    encrypted_password = Column(String)
+    role = Column(String)
+
 class Product(Base):
     __tablename__ = "products"
 

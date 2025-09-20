@@ -39,7 +39,7 @@ const CheckoutPage = () => {
         }))
       };
 
-      const response = await fetch('http://localhost:8000/orders/', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

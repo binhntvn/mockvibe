@@ -51,7 +51,7 @@ const Product = () => {
     if (!user || !product || !token) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/products/${product.id}/reviews`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/products/${product.id}/reviews`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

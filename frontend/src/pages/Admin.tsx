@@ -26,15 +26,15 @@ const Admin = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const productsResponse = await fetch('http://localhost:8000/products');
+      const productsResponse = await fetch(`${import.meta.env.VITE_API_URL}/products`);
       const productsData = await productsResponse.json();
       setProducts(productsData);
 
-      const usersResponse = await fetch('http://localhost:8000/users/');
+      const usersResponse = await fetch(`${import.meta.env.VITE_API_URL}/users/`);
       const usersData = await usersResponse.json();
       setUsers(usersData);
 
-      const ordersResponse = await fetch('http://localhost:8000/admin/orders/');
+      const ordersResponse = await fetch(`${import.meta.env.VITE_API_URL}/admin/orders/`);
       const ordersData = await ordersResponse.json();
       setOrders(ordersData);
 

@@ -19,7 +19,7 @@ const Profile = () => {
     const fetchOrders = async () => {
       if (!user || !token) return;
       try {
-        const response = await fetch('http://localhost:8000/orders/', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
